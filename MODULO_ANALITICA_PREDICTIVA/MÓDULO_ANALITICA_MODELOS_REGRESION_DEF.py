@@ -23,13 +23,6 @@ from googleapiclient.http import MediaIoBaseDownload
 import json
 from urllib.error import HTTPError
 
-from google.auth.transport.requests import Request
-from google.oauth2.credentials import Credentials
-from google_auth_oauthlib.flow import InstalledAppFlow
-from googleapiclient.discovery import build
-from googleapiclient.errors import HttpError
-from googleapiclient.http import MediaIoBaseDownload
-
 from sklearn.preprocessing import LabelEncoder
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.preprocessing import StandardScaler
@@ -77,45 +70,6 @@ from sklearn.gaussian_process.kernels import RBF, ConstantKernel as C, WhiteKern
 #---------------------------------------------------------------
 # CARGUE DE DATOS
 #---------------------------------------------------------------
-
-SCOPES = ['https://www.googleapis.com/auth/drive.readonly']
-creds = None
-if os.path.exists('token.json'):
-    creds = Credentials.from_authorized_user_file('token.json', SCOPES)
-if not creds or not creds.valid:
-    if creds and creds.expired and creds.refresh_token:
-        creds.refresh(Request())
-    else:
-        flow = InstalledAppFlow.from_client_secrets_file('C:/Users/Intevo/Desktop/UNIVERSIDAD DISTRITAL PROYECTO FOLDER/credentials.json', SCOPES) # Reemplazar con la ruta correcta
-        creds = flow.run_local_server(port=0)
-    with open('C:/Users/Intevo/Desktop/UNIVERSIDAD DISTRITAL PROYECTO FOLDER/token.json', 'w') as token:
-        token.write(creds.to_json())
-        
-drive_service = build('drive', 'v3', credentials=creds)
-folder_id = '1hQeetmO4XIObUefS_nzePqKqq3VksUEC'
-save_path = 'C:/Users/Intevo/Desktop/UNIVERSIDAD DISTRITAL PROYECTO FOLDER/UNIVERSIDAD-DISTRITAL-PROYECTO/MODULO_ANALITICA_PREDICTIVA/DATOS'  # Reemplazar con la ruta deseada
-
-def download_folder(folder_id, save_path):
-    results = drive_service.files().list(
-        q=f"'{folder_id}' in parents and trashed=false",
-        fields='files(id, name)').execute()
-    items = results.get('files', [])
-    for item in items:
-        file_id = item['id']
-        file_name = item['name']
-        request = drive_service.files().get_media(fileId=file_id)
-        fh = io.FileIO(os.path.join(save_path, file_name), 'wb')
-        downloader = MediaIoBaseDownload(fh, request)
-        done = False
-        while done is False:
-            status, done = downloader.next_chunk()
-            print(f"Descargando {file_name}: {int(status.progress() * 100)}%")
-    print("Descarga completa")
-download_folder(folder_id, save_path)
-files = os.listdir(save_path)
-print("Archivos descargados:")
-for file in files:
-    print(file)
 
 app = FastAPI()
 carrera = ""
